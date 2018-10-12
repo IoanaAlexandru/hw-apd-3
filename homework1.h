@@ -3,10 +3,10 @@
 
 typedef struct {
 
-}image;
+} image;
 
 void initialize(image *im);
 void render(image *im);
-void writeData(const char * fileName, image *img);
+void writeData(const char *fileName, image *img);
 
 #endif /* HOMEWORK_H1 */

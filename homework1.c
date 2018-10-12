@@ -11,7 +11,7 @@ void render(image *im) {
 
 }
 
-void writeData(const char * fileName, image *img) {
+void writeData(const char *fileName, image *img) {
 
 }
 

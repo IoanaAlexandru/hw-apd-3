@@ -7,6 +7,55 @@
 int num_threads;
 int resize_factor;
 
+void alloc_image(image *img) {
+  img->image = (unsigned char **) malloc(
+      (size_t) img->height * sizeof(unsigned char **));
+  int real_width = img->type == 5 ? img->width : img->width * 3;
+
+  for (int i = 0; i < img->height; i++)
+    img->image[i] =
+        (unsigned char *) malloc((size_t) real_width * sizeof(unsigned char *));
+}
+
+void resize_arithmetic_mean_bw(image *in, image *out) {
+  int i1, j1, i2, j2,
+      sum, count = resize_factor * resize_factor;
+  for (i1 = 0; i1 < out->height; i1++) {
+    for (j1 = 0; j1 < out->width; j1++) {
+      sum = 0;
+      for (i2 = i1 * resize_factor; i2 < (i1 + 1) * resize_factor; i2++) {
+        for (j2 = j1 * resize_factor; j2 < (j1 + 1) * resize_factor; j2++) {
+          sum += in->image[i2][j2];
+        }
+      }
+      out->image[i1][j1] = (unsigned char) (sum / count);
+    }
+  }
+}
+
+void resize_arithmetic_mean_color(image *in, image *out) {
+  int i1, j1, i2, j2,
+      sum_red, sum_green, sum_blue, count = resize_factor * resize_factor;
+  for (i1 = 0; i1 < out->height; i1++) {
+    for (j1 = 0; j1 < out->width * 3; j1 += 3) {
+      sum_red = 0;
+      sum_green = 0;
+      sum_blue = 0;
+      for (i2 = i1 * resize_factor; i2 < (i1 + 1) * resize_factor; i2++) {
+        for (j2 = j1 * resize_factor; j2 < (j1 + 1) * resize_factor + 3;
+             j2 += 3) {
+          sum_red += in->image[i2][j2];
+          sum_green += in->image[i2][j2 + 1];
+          sum_blue += in->image[i2][j2 + 2];
+        }
+      }
+      out->image[i1][j1] = (unsigned char) (sum_red / count);
+      out->image[i1][j1 + 1] = (unsigned char) (sum_green / count);
+      out->image[i1][j1 + 2] = (unsigned char) (sum_blue / count);
+    }
+  }
+}
+
 void readInput(const char *fileName, image *img) {
   FILE *in = fopen(fileName, "rb");
   if (in == NULL) {
@@ -35,15 +84,11 @@ void readInput(const char *fileName, image *img) {
 
   fseek(in, 1, SEEK_CUR);  // skip whitespace
 
-  img->image = (unsigned char **) malloc(
-      (size_t) img->height * sizeof(unsigned char **));
+  alloc_image(img);
   int real_width = img->type == 5 ? img->width : img->width * 3;
 
-  for (int i = 0; i < img->height; i++) {
-    img->image[i] =
-        (unsigned char *) malloc((size_t) real_width * sizeof(unsigned char *));
+  for (int i = 0; i < img->height; i++)
     fread(img->image[i], sizeof(char), (size_t) real_width, in);
-  }
 
   fclose(in);
 }
@@ -79,8 +124,24 @@ void writeData(const char *fileName, image *img) {
 
 void resize(image *in, image *out) {
   out->type = in->type;
-  out->height = in->height;
-  out->width = in->width;
+  out->height = in->height / resize_factor;
+  out->width = in->width / resize_factor;
   out->maxval = in->maxval;
-  out->image = in->image;
+  alloc_image(out);
+
+  if (resize_factor % 2 == 0) {
+    if (in->type == 5)
+      resize_arithmetic_mean_bw(in, out);
+    else
+      resize_arithmetic_mean_color(in, out);
+  } else if (resize_factor == 3) {
+    // TODO
+  } else {
+    // odd resize factors != 3 are not supported => result image is not modified
+    out->type = in->type;
+    out->height = in->height;
+    out->width = in->width;
+    out->maxval = in->maxval;
+    out->image = in->image;
+  }
 }

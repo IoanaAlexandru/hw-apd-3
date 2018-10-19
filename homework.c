@@ -8,18 +8,34 @@
 int num_threads;
 int resize_factor;
 
-void alloc_image(image *img) {
+int alloc_image(image *img) {
   img->image = (unsigned char **) malloc(
       (size_t) img->height * sizeof(unsigned char **));
+  if (img->image == NULL)
+    return -1;
 
   int real_width = img->type == 5 ? img->width : img->width * 3;
 
-  for (int i = 0; i < img->height; i++)
+  for (int i = 0; i < img->height; i++) {
     img->image[i] =
         (unsigned char *) malloc((size_t) real_width * sizeof(unsigned char *));
+    if (img->image[i] == NULL) {
+      for (int j = 0; j < i; j++)
+        free(img->image[j]);
+      return -1;
+    }
+  }
+
+  return 0;
 }
 
-void* resize_bw(void *args) {
+void free_image(image *img) {
+  for (int i = 0; i < img->height; i++)
+    free(img->image[i]);
+  free(img->image);
+}
+
+void *resize_bw(void *args) {
   thread_func_args *imgs = (thread_func_args *) args;
   image *in = imgs->in, *out = imgs->out;
   int thread_id = imgs->thread_id;
@@ -49,7 +65,7 @@ void* resize_bw(void *args) {
   return 0;
 }
 
-void* resize_color(void *args) {
+void *resize_color(void *args) {
   thread_func_args *imgs = (thread_func_args *) args;
   image *in = imgs->in, *out = imgs->out;
   int thread_id = imgs->thread_id;
@@ -119,11 +135,14 @@ void readInput(const char *fileName, image *img) {
 
   fseek(in, 1, SEEK_CUR);  // skip whitespace
 
-  alloc_image(img);
-  int real_width = img->type == 5 ? img->width : img->width * 3;
+  if (alloc_image(img) != 0) {
+    fprintf(stderr, "Cannot allocate memory!\n");
+  } else {
+    int real_width = img->type == 5 ? img->width : img->width * 3;
 
-  for (int i = 0; i < img->height; i++)
-    fread(img->image[i], sizeof(char), (size_t) real_width, in);
+    for (int i = 0; i < img->height; i++)
+      fread(img->image[i], sizeof(char), (size_t) real_width, in);
+  }
 
   fclose(in);
 }
@@ -148,13 +167,14 @@ void writeData(const char *fileName, image *img) {
   fprintf(out, "%d\n", img->height);
   fprintf(out, "%d\n", img->maxval);
 
-  int real_width = img->type == 5 ? img->width : img->width * 3;
+  int i, real_width = img->type == 5 ? img->width : img->width * 3;
 
-  for (int i = 0; i < img->height; i++) {
+  for (i = 0; i < img->height; i++) {
     fwrite(img->image[i], sizeof(char), (size_t) real_width, out);
   }
 
   fclose(out);
+  free_image(img);
 }
 
 void resize(image *in, image *out) {
@@ -162,23 +182,28 @@ void resize(image *in, image *out) {
   out->height = in->height / resize_factor;
   out->width = in->width / resize_factor;
   out->maxval = in->maxval;
-  alloc_image(out);
 
-  void* (*thread_func)(void *) = in->type == 5 ? resize_bw : resize_color;
+  if (alloc_image(out) != 0) {
+    fprintf(stderr, "Cannot allocate memory!\n");
+    return;
+  }
+
+  void *(*thread_func)(void *) = in->type == 5 ? resize_bw : resize_color;
 
   int i;
   pthread_t tid[num_threads];
-  thread_func_args *args[num_threads];
+  thread_func_args args[num_threads];
 
-  for(i = 0; i < num_threads; i++) {
-    args[i] = (thread_func_args*) malloc(sizeof(thread_func_args));
-    args[i]->in = in;
-    args[i]->out = out;
-    args[i]->thread_id = i;
-    pthread_create(&(tid[i]), NULL, thread_func, args[i]);
+  for (i = 0; i < num_threads; i++) {
+    args[i].in = in;
+    args[i].out = out;
+    args[i].thread_id = i;
+    pthread_create(&(tid[i]), NULL, thread_func, &(args[i]));
   }
 
-  for(i = 0; i < num_threads; i++) {
+  for (i = 0; i < num_threads; i++) {
     pthread_join(tid[i], NULL);
   }
+
+  free_image(in);
 }

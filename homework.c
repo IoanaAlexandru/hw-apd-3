@@ -8,6 +8,10 @@
 int num_threads;
 int resize_factor;
 
+/*
+ * Allocate matrix of pixels in image structure.
+ * Returns 0 after a successful allocation, -1 otherwise.
+ */
 int alloc_image(image *img) {
   img->image = (unsigned char **) malloc(
       (size_t) img->height * sizeof(unsigned char **));
@@ -29,12 +33,19 @@ int alloc_image(image *img) {
   return 0;
 }
 
+/*
+ * Free matrix of pixels in image structure.
+ */
 void free_image(image *img) {
   for (int i = 0; i < img->height; i++)
     free(img->image[i]);
   free(img->image);
 }
 
+/*
+ * Resize image of type P5 (grayscale).
+ * Takes a pointer to a thread_func_args which contains two images and an int.
+ */
 void *resize_bw(void *args) {
   thread_func_args *imgs = (thread_func_args *) args;
   image *in = imgs->in, *out = imgs->out;
@@ -65,6 +76,10 @@ void *resize_bw(void *args) {
   return 0;
 }
 
+/*
+ * Resize image of type P6 (colour).
+ * Takes a pointer to a thread_func_args which contains two images and an int.
+ */
 void *resize_color(void *args) {
   thread_func_args *imgs = (thread_func_args *) args;
   image *in = imgs->in, *out = imgs->out;
@@ -79,9 +94,7 @@ void *resize_color(void *args) {
 
   for (i1 = start; i1 < end; i1++) {
     for (j1 = 0; j1 < out->width * 3; j1 += 3) {
-      sum_red = 0;
-      sum_green = 0;
-      sum_blue = 0;
+      sum_red = sum_green = sum_blue = 0;
       for (i2 = i1 * resize_factor; i2 < (i1 + 1) * resize_factor; i2++) {
         for (j2 = j1 * resize_factor; j2 < (j1 + 3) * resize_factor;
              j2 += 3) {
@@ -107,6 +120,9 @@ void *resize_color(void *args) {
   return 0;
 }
 
+/*
+ * Read data from file <fileName> and save it in <img>.
+ */
 void readInput(const char *fileName, image *img) {
   FILE *in = fopen(fileName, "rb");
   if (in == NULL) {
@@ -147,6 +163,9 @@ void readInput(const char *fileName, image *img) {
   fclose(in);
 }
 
+/*
+ * Write data from <img> to file <fileName> and free <img>.
+ */
 void writeData(const char *fileName, image *img) {
   FILE *out = fopen(fileName, "wb");
   if (out == NULL) {
@@ -177,6 +196,9 @@ void writeData(const char *fileName, image *img) {
   free_image(img);
 }
 
+/*
+ * Create resized image <out> from <in> and free <in>.
+ */
 void resize(image *in, image *out) {
   out->type = in->type;
   out->height = in->height / resize_factor;

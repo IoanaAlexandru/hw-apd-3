@@ -3,6 +3,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 int num_threads;
 int resize_factor;
@@ -10,6 +11,7 @@ int resize_factor;
 void alloc_image(image *img) {
   img->image = (unsigned char **) malloc(
       (size_t) img->height * sizeof(unsigned char **));
+
   int real_width = img->type == 5 ? img->width : img->width * 3;
 
   for (int i = 0; i < img->height; i++)
@@ -17,12 +19,19 @@ void alloc_image(image *img) {
         (unsigned char *) malloc((size_t) real_width * sizeof(unsigned char *));
 }
 
-void resize_bw(image *in, image *out) {
+void* resize_bw(void *args) {
+  thread_func_args *imgs = (thread_func_args *) args;
+  image *in = imgs->in, *out = imgs->out;
+  int thread_id = imgs->thread_id;
+
   int i1, j1, i2, j2, sum;
   int gaussian_kernel[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};
   int count = resize_factor == 3 ? 16 : resize_factor * resize_factor;
 
-  for (i1 = 0; i1 < out->height; i1++) {
+  int start = thread_id * (out->height) / num_threads,
+      end = (thread_id + 1) * (out->height) / num_threads;
+
+  for (i1 = start; i1 < end; i1++) {
     for (j1 = 0; j1 < out->width; j1++) {
       sum = 0;
       for (i2 = i1 * resize_factor; i2 < (i1 + 1) * resize_factor; i2++) {
@@ -36,14 +45,23 @@ void resize_bw(image *in, image *out) {
       out->image[i1][j1] = (unsigned char) (sum / count);
     }
   }
+
+  return 0;
 }
 
-void resize_color(image *in, image *out) {
-  int i1, j1, i2, j2, sum_red, sum_green, sum_blue;\
+void* resize_color(void *args) {
+  thread_func_args *imgs = (thread_func_args *) args;
+  image *in = imgs->in, *out = imgs->out;
+  int thread_id = imgs->thread_id;
+
+  int i1, j1, i2, j2, sum_red, sum_green, sum_blue;
   int gaussian_kernel[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};
   int count = resize_factor == 3 ? 16 : resize_factor * resize_factor;
 
-  for (i1 = 0; i1 < out->height; i1++) {
+  int start = thread_id * (out->height) / num_threads,
+      end = (thread_id + 1) * (out->height) / num_threads;
+
+  for (i1 = start; i1 < end; i1++) {
     for (j1 = 0; j1 < out->width * 3; j1 += 3) {
       sum_red = 0;
       sum_green = 0;
@@ -69,6 +87,8 @@ void resize_color(image *in, image *out) {
       out->image[i1][j1 + 2] = (unsigned char) (sum_blue / count);
     }
   }
+
+  return 0;
 }
 
 void readInput(const char *fileName, image *img) {
@@ -144,8 +164,21 @@ void resize(image *in, image *out) {
   out->maxval = in->maxval;
   alloc_image(out);
 
-  if (in->type == 5)
-    resize_bw(in, out);
-  else
-    resize_color(in, out);
+  void* (*thread_func)(void *) = in->type == 5 ? resize_bw : resize_color;
+
+  int i;
+  pthread_t tid[num_threads];
+  thread_func_args *args[num_threads];
+
+  for(i = 0; i < num_threads; i++) {
+    args[i] = (thread_func_args*) malloc(sizeof(thread_func_args));
+    args[i]->in = in;
+    args[i]->out = out;
+    args[i]->thread_id = i;
+    pthread_create(&(tid[i]), NULL, thread_func, args[i]);
+  }
+
+  for(i = 0; i < num_threads; i++) {
+    pthread_join(tid[i], NULL);
+  }
 }

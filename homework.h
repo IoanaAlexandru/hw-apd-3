@@ -12,6 +12,12 @@ typedef struct {
   unsigned char **image;
 } image;
 
+typedef struct {
+  image *in;
+  image *out;
+  int thread_id;
+} thread_func_args;
+
 void readInput(const char *fileName, image *img);
 
 void writeData(const char *fileName, image *img);

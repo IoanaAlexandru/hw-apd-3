@@ -50,6 +50,8 @@ void *thread_func(void *args) {
           (getDistance(x, y) <= LINE_WIDTH ? LINE_COLOR : BACKGROUND_COLOR);
     }
   }
+
+  return 0;
 }
 
 void render(image *im) {
@@ -85,5 +87,8 @@ void writeData(const char *fileName, image *img) {
   }
 
   fclose(out);
+  for (int i = 0; i < img->height; i++)
+    free(img->image[i]);
+  free(img->image);
 }
 

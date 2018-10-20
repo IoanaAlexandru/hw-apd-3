@@ -143,3 +143,5 @@ unde:
 
      start = thread_id * (out->width) / num_threads
      end = (thread_id + 1) * (out->width) / num_threads
+
+=========================== ALEXANDRU Ioana | 324CB ===========================

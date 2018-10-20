@@ -3,8 +3,8 @@
 
 typedef struct {
   /*
-   * 5 -> image is PPM
-   * 6 -> image is PGM
+   * 5 -> image is PGM
+   * 6 -> image is PPM
    */
   int type;
   int width, height;

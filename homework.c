@@ -81,9 +81,9 @@ void *resize_bw(void *args) {
  * Takes a pointer to a thread_func_args which contains two images and an int.
  */
 void *resize_color(void *args) {
-  thread_func_args *imgs = (thread_func_args *) args;
-  image *in = imgs->in, *out = imgs->out;
-  int thread_id = imgs->thread_id;
+  image *in = ((thread_func_args *) args)->in,
+      *out = ((thread_func_args *) args)->out;
+  int thread_id = ((thread_func_args *) args)->thread_id;
 
   int i1, j1, i2, j2, sum_red, sum_green, sum_blue;
   int gaussian_kernel[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};

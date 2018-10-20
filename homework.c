@@ -12,7 +12,7 @@ int resize_factor;
  * Allocate matrix of pixels in image structure.
  * Returns 0 after a successful allocation, -1 otherwise.
  */
-int alloc_image(image *img) {
+int allocImage(image *img) {
   img->image = (unsigned char **) malloc(
       (size_t) img->height * sizeof(unsigned char **));
   if (img->image == NULL)
@@ -36,7 +36,7 @@ int alloc_image(image *img) {
 /*
  * Free matrix of pixels in image structure.
  */
-void free_image(image *img) {
+void freeImage(image *img) {
   for (int i = 0; i < img->height; i++)
     free(img->image[i]);
   free(img->image);
@@ -46,7 +46,7 @@ void free_image(image *img) {
  * Resize image of type P5 (grayscale).
  * Takes a pointer to a thread_func_args which contains two images and an int.
  */
-void *resize_bw(void *args) {
+void *resizeBw(void *args) {
   thread_func_args *imgs = (thread_func_args *) args;
   image *in = imgs->in, *out = imgs->out;
   int thread_id = imgs->thread_id;
@@ -80,7 +80,7 @@ void *resize_bw(void *args) {
  * Resize image of type P6 (colour).
  * Takes a pointer to a thread_func_args which contains two images and an int.
  */
-void *resize_color(void *args) {
+void *resizeColor(void *args) {
   image *in = ((thread_func_args *) args)->in,
       *out = ((thread_func_args *) args)->out;
   int thread_id = ((thread_func_args *) args)->thread_id;
@@ -151,7 +151,7 @@ void readInput(const char *fileName, image *img) {
 
   fseek(in, 1, SEEK_CUR);  // skip whitespace
 
-  if (alloc_image(img) != 0) {
+  if (allocImage(img) != 0) {
     fprintf(stderr, "Cannot allocate memory!\n");
   } else {
     int real_width = img->type == 5 ? img->width : img->width * 3;
@@ -193,7 +193,7 @@ void writeData(const char *fileName, image *img) {
   }
 
   fclose(out);
-  free_image(img);
+  freeImage(img);
 }
 
 /*
@@ -205,12 +205,12 @@ void resize(image *in, image *out) {
   out->width = in->width / resize_factor;
   out->maxval = in->maxval;
 
-  if (alloc_image(out) != 0) {
+  if (allocImage(out) != 0) {
     fprintf(stderr, "Cannot allocate memory!\n");
     return;
   }
 
-  void *(*thread_func)(void *) = in->type == 5 ? resize_bw : resize_color;
+  void *(*threadFunc)(void *) = in->type == 5 ? resizeBw : resizeColor;
 
   int i;
   pthread_t tid[num_threads];
@@ -220,12 +220,12 @@ void resize(image *in, image *out) {
     args[i].in = in;
     args[i].out = out;
     args[i].thread_id = i;
-    pthread_create(&(tid[i]), NULL, thread_func, &(args[i]));
+    pthread_create(&(tid[i]), NULL, threadFunc, &(args[i]));
   }
 
   for (i = 0; i < num_threads; i++) {
     pthread_join(tid[i], NULL);
   }
 
-  free_image(in);
+  freeImage(in);
 }

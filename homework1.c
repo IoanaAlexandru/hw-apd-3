@@ -34,7 +34,7 @@ double getDistance(double x, double y) {
   return abs(A * x + B * y + C) / (sqrt(pow(A, 2) + pow(B, 2)));
 }
 
-void *thread_func(void *args) {
+void *threadFunc(void *args) {
   image *im = ((thread_func_args *) args)->img;
   int thread_id = ((thread_func_args *) args)->thread_id;
   double x, y;
@@ -62,7 +62,7 @@ void render(image *im) {
   for (i = 0; i < num_threads; i++) {
     args[i].img = im;
     args[i].thread_id = i;
-    pthread_create(&(tid[i]), NULL, thread_func, &(args[i]));
+    pthread_create(&(tid[i]), NULL, threadFunc, &(args[i]));
   }
 
   for (i = 0; i < num_threads; i++) {

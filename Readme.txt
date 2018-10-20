@@ -19,7 +19,7 @@ Structuri folosite:
    * height: înălțimea imaginii
    * maxval: valoarea maximă a unui pixel (<= 255)
    * image: matrice care conține valorile pixelilor ce desciu imaginea
- - thread_func_args: conține argumentele de care are nevoie thread_func
+ - thread_func_args: conține argumentele de care are nevoie threadFunc
    * in: imaginea inițială
    * out: imaginea obținută după redimensionare\
    * thread_id: id-ul thread-ului
@@ -27,16 +27,16 @@ Structuri folosite:
 
 Funcții:
 
- - alloc_image:  alocă matricea de pixeli dintr-o imagine
- - free_image:   eliberează matricea de pixeli dintr-o imagine
- - resize_bw:    redimensionează imaginea inițială (greyscale) în funcție de
+ - allocImage:  alocă matricea de pixeli dintr-o imagine
+ - freeImage:   eliberează matricea de pixeli dintr-o imagine
+ - resizeBw:    redimensionează imaginea inițială (greyscale) în funcție de
                  resize_factor
- - resize_color: redimensionează imaginea inițială (color) în funcție de
+ - resizeColor: redimensionează imaginea inițială (color) în funcție de
                  resize_factor
  - readInput:    citește datele dintr-un fișier și le memorează într-o structură
                  de tip <image>
  - writeData:    scrie datele dintr-o structură de tip <image> într-un fișier
- - resize:       folosește funcțiile resize_bw și resize_color pentru a redimen-
+ - resize:       folosește funcțiile resizeBw și resizeColor pentru a redimen-
                  siona o imagine (mai exact, a o micșora de resize_factor ori)
                  folosind mai multe fire de execuție (num_threads).
 
@@ -55,7 +55,7 @@ funcțiile din homework.c astfel:
 Algoritm redimensionare:
 
  Pentru fiecare pixel din noua imagine, se calculează valoarea (pe un singur
-canal de culoare în cazul resize_bw, sau pe trei canale în cazul resize_color)
+canal de culoare în cazul resizeBw, sau pe trei canale în cazul resizeColor)
 în funcție de cei resize_factor * resize_factor pixeli corespunzători din ima-
 ginea originală. În cazul în care resize_factor este diferit de 3, se calculea-
 ză media aritmetică a pixelilor din imaginea originală. În cazul în care
@@ -95,7 +95,7 @@ Structuri folosite:
    * height: înălțimea imaginii
    * maxval: valoarea maximă a unui pixel (<= 255)
    * image: matrice care conține valorile pixelilor ce desciu imaginea
- - thread_func_args: conține argumentele de care are nevoie thread_func
+ - thread_func_args: conține argumentele de care are nevoie threadFunc
    * img: imaginea inițială
    * thread_id: id-ul thread-ului
 
@@ -106,9 +106,9 @@ Funcții:
  - pixelsToCm:  convertește din pixeli în centimetri în funcție de dimensiunea
                 imaginii (în cm) și rezoluție
  - getDistance: calculează distanța dintre un punct și dreapta Ax+By+C
- - thread_func: randează imaginea
+ - threadFunc: randează imaginea
  - render:      randează imaginea pe mai multe fire de execuție folosind
-                thread_func
+                threadFunc
  - writeData:   scrie datele dintr-o structură de tip <image> într-un fișier
 
 

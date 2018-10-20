@@ -30,15 +30,15 @@ Funcții:
  - allocImage:  alocă matricea de pixeli dintr-o imagine
  - freeImage:   eliberează matricea de pixeli dintr-o imagine
  - resizeBw:    redimensionează imaginea inițială (greyscale) în funcție de
-                 resize_factor
+                resize_factor
  - resizeColor: redimensionează imaginea inițială (color) în funcție de
-                 resize_factor
- - readInput:    citește datele dintr-un fișier și le memorează într-o structură
-                 de tip <image>
- - writeData:    scrie datele dintr-o structură de tip <image> într-un fișier
- - resize:       folosește funcțiile resizeBw și resizeColor pentru a redimen-
-                 siona o imagine (mai exact, a o micșora de resize_factor ori)
-                 folosind mai multe fire de execuție (num_threads).
+                resize_factor
+ - readInput:   citește datele dintr-un fișier și le memorează într-o structură
+                de tip <image>
+ - writeData:   scrie datele dintr-o structură de tip <image> într-un fișier
+ - resize:      folosește funcțiile resizeBw și resizeColor pentru a redimen-
+                siona o imagine (mai exact, a o micșora de resize_factor ori)
+                folosind mai multe fire de execuție (num_threads).
 
 
 Memorie:
@@ -106,7 +106,7 @@ Funcții:
  - pixelsToCm:  convertește din pixeli în centimetri în funcție de dimensiunea
                 imaginii (în cm) și rezoluție
  - getDistance: calculează distanța dintre un punct și dreapta Ax+By+C
- - threadFunc: randează imaginea
+ - threadFunc:  randează imaginea
  - render:      randează imaginea pe mai multe fire de execuție folosind
                 threadFunc
  - writeData:   scrie datele dintr-o structură de tip <image> într-un fișier

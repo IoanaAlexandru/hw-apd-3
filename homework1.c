@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <pthread.h>
 #include "homework1.h"
 
 int num_threads;
@@ -33,10 +34,14 @@ double getDistance(double x, double y) {
   return abs(A * x + B * y + C) / (sqrt(pow(A, 2) + pow(B, 2)));
 }
 
-void render(image *im) {
+void *thread_func(void *args) {
+  image *im = ((thread_func_args *) args)->img;
+  int thread_id = ((thread_func_args *) args)->thread_id;
   double x, y;
+  int start = thread_id * (im->height) / num_threads,
+      end = (thread_id + 1) * (im->height) / num_threads;
 
-  for (int i = 0; i < im->height; i++) {
+  for (int i = start; i < end; i++) {
     for (int j = 0; j < im->width; j++) {
       // Calculate coordinates to center of pixel
       x = pixelsToCm(j) + ((float) IMG_SIZE / resolution) / 2;
@@ -44,6 +49,22 @@ void render(image *im) {
       im->image[i][j] =
           (getDistance(x, y) <= LINE_WIDTH ? LINE_COLOR : BACKGROUND_COLOR);
     }
+  }
+}
+
+void render(image *im) {
+  pthread_t tid[num_threads];
+  thread_func_args args[num_threads];
+  int i;
+
+  for (i = 0; i < num_threads; i++) {
+    args[i].img = im;
+    args[i].thread_id = i;
+    pthread_create(&(tid[i]), NULL, thread_func, &(args[i]));
+  }
+
+  for (i = 0; i < num_threads; i++) {
+    pthread_join(tid[i], NULL);
   }
 }
 

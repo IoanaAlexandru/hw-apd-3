@@ -29,16 +29,20 @@ double pixelsToCm(double pixels) {
   return (pixels * IMG_SIZE) / resolution;
 }
 
-double getDistance(int x, int y) {
+double getDistance(double x, double y) {
   return abs(A * x + B * y + C) / (sqrt(pow(A, 2) + pow(B, 2)));
 }
 
 void render(image *im) {
+  double x, y;
+
   for (int i = 0; i < im->height; i++) {
     for (int j = 0; j < im->width; j++) {
+      // Calculate coordinates to center of pixel
+      x = pixelsToCm(j) + ((float) IMG_SIZE / resolution) / 2;
+      y = pixelsToCm(im->height - i - 1) + ((float) IMG_SIZE / resolution) / 2;
       im->image[i][j] =
-          (unsigned char) (pixelsToCm(getDistance(j, im->height - i))
-                               <= LINE_WIDTH ? LINE_COLOR : BACKGROUND_COLOR);
+          (getDistance(x, y) <= LINE_WIDTH ? LINE_COLOR : BACKGROUND_COLOR);
     }
   }
 }

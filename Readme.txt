@@ -124,6 +124,43 @@ Algoritm randare:
 ului la linia Ax+By+C (în centimetri). Dacă ese mai mică decât 3, pixelul va fi
 negru, iar în caz contrar, pixelul va fi alb.
 
+     Fie resolution = 4. Avem imaginea următoare, unde valorile de tip "x,y"
+    sunt coordonatele care indică poziția pixelului respectiv:
+
+    <-------- 100cm -------->
+    +-----+-----+-----+-----+
+    | 0,3 | 1,3 | 2,3 | 3,3 |
+    +-----+-----+-----+-----+
+    | 0,2 | 1,2 | 2,2 | 3,2 |
+    +-----+-----+-----+-----+
+    | 0,1 | 1,1 | 2,1 | 3,1 |
+    +-----+-----+-----+-----+
+    | 0,0 | 1,0 | 2,0 | 3,0 |
+    +-----+-----+-----+-----+
+
+     Fie pixelul (1,2). Coordonatele colțului din stânga jos ale acestui pixel,
+    în centimetri, sunt următoarele:
+
+      x1 = 1 * 100 / 4 = 25
+      y1 = 2 * 100 / 4 = 50
+
+      Obținem coordonatele centrului pixelului (în centimetri) adăugând jumătate
+    din latura pixelului la fiecare din coordonate:
+
+      x2 = x1 + 100 / 4 / 2 = 25 + 2.5 = 27.5
+      y2 = y1 + 100 / 4 / 2 = 50 + 2.5 = 52.5
+
+      Calculăm distanța de la centrul pixelului (punctul de coordonate x2, y2)
+    folosind formula:
+
+      d = | a * x + b * y + c | / sqrt(a ^ 2 + b ^ 2) unde a = -1, b = 2, c = 0
+
+      Obținem:
+
+      d = (-1 * 27.5 + 2 * 52.5) / √5 = 34.65 > 3
+
+      Deoarece d > 3, pixelul va fi alb.
+
 
 Paralelizare:
 

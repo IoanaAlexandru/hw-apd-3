@@ -116,6 +116,76 @@ void writeData(const char *fileName, image *img) {
   freeImage(img);
 }
 
+void sendImage(image *img, int receiver) {
+  MPI_Send(&(img->type), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
+  MPI_Send(&(img->width), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
+  MPI_Send(&(img->height), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
+  MPI_Send(&(img->maxval),
+           1,
+           MPI_UNSIGNED_CHAR,
+           receiver,
+           DEFAULT_TAG,
+           MPI_COMM_WORLD);
+
+  int real_width = img->type == 5 ? img->width : img->width * 3;
+  for (int i = 0; i < img->height; i++) {
+    MPI_Send(img->image[i],
+             real_width,
+             MPI_UNSIGNED_CHAR,
+             receiver,
+             DEFAULT_TAG,
+             MPI_COMM_WORLD);
+  }
+}
+
+image *recvImage(int sender) {
+  image *img = (image *) malloc(sizeof(image));
+
+  MPI_Recv(&(img->type),
+           1,
+           MPI_INT,
+           sender,
+           DEFAULT_TAG,
+           MPI_COMM_WORLD,
+           MPI_STATUS_IGNORE);
+  MPI_Recv(&(img->width),
+           1,
+           MPI_INT,
+           sender,
+           DEFAULT_TAG,
+           MPI_COMM_WORLD,
+           MPI_STATUS_IGNORE);
+  MPI_Recv(&(img->height),
+           1,
+           MPI_INT,
+           sender,
+           DEFAULT_TAG,
+           MPI_COMM_WORLD,
+           MPI_STATUS_IGNORE);
+  MPI_Recv(&(img->maxval),
+           1,
+           MPI_UNSIGNED_CHAR,
+           sender,
+           DEFAULT_TAG,
+           MPI_COMM_WORLD,
+           MPI_STATUS_IGNORE);
+
+  allocImage(img);
+
+  int real_width = img->type == 5 ? img->width : img->width * 3;
+  for (int i = 0; i < img->height; i++) {
+    MPI_Recv(img->image[i],
+             real_width,
+             MPI_UNSIGNED_CHAR,
+             sender,
+             DEFAULT_TAG,
+             MPI_COMM_WORLD,
+             MPI_STATUS_IGNORE);
+  }
+
+  return img;
+}
+
 int main(int argc, char *argv[]) {
   int rank;
   int nProcesses;
@@ -139,10 +209,19 @@ int main(int argc, char *argv[]) {
 
     readInput(argv[1], &input);
 
+    for (int i = 1; i < nProcesses; i++) {
+      sendImage(&input, i);
+    }
+
     // TODO apply filters
     output = input;
 
     writeData(argv[2], &output);
+  } else {
+    image *img = recvImage(0);
+    char name[20];
+    sprintf(name, "%s%d.pgm", argv[2], rank);
+    writeData(name, img);
   }
 
   MPI_Finalize();

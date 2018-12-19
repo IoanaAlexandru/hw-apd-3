@@ -1,6 +1,4 @@
 .idea
 CMakeLists.txt
 cmake*
-in
-out
-ref
+test/out/*

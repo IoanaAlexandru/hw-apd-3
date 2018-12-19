@@ -65,4 +65,6 @@ void sendImage(image_t *img, int receiver);
 
 image_t *recvImage(int sender);
 
+void applyFilter(image_t *img, filter_t filter);
+
 #endif /* HOMEWORK_H */

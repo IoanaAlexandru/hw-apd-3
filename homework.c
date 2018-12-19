@@ -185,6 +185,46 @@ image_t *recvImage(int sender) {
   return img;
 }
 
+int multiplyMatrices(const int m1[3][3], unsigned char m2[3][3]) {
+  int result = 0;
+  for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
+      result += m1[i][j] * m2[i][j];
+  return result;
+}
+
+void applyFilter(image_t *img, filter_t filter) {
+  image_t result = *img;
+  allocImage(&result);
+
+  int step = img->type == 5 ? 1 : 3;
+  int real_width = img->width * step;
+
+  for (int i = 0; i < img->height; i++) {
+    for (int j = 0; j < real_width - step; j++) {
+      if (i == 0 || j < step || i == img->height - 1
+          || j > real_width - 2 * (step - 1)) {
+        result.image[i][j] = img->image[i][j];
+      } else {
+        unsigned char **p = img->image;
+        unsigned char pixels[3][3] =
+            {{p[i - 1][j - step], p[i - 1][j], p[i - 1][j + step]},
+             {p[i][j - step], p[i][j], p[i][j + step]},
+             {p[i + 1][j - step], p[i + 1][j], p[i + 1][j + step]}};
+        result.image[i][j] =
+            (unsigned char) (multiplyMatrices(filter.kernel, pixels)
+                / filter.weight);
+      }
+    }
+  }
+
+  for (int i = 0; i < img->height; i++)
+    for (int j = 0; j < real_width - step; j++)
+      img->image[i][j] = result.image[i][j];
+
+  freeImage(&result);
+}
+
 int main(int argc, char *argv[]) {
   int rank;
   int nProcesses;
@@ -203,19 +243,17 @@ int main(int argc, char *argv[]) {
       exit(-1);
     }
 
-    image_t input;
-    image_t output;
+    image_t image;
 
-    readInput(argv[1], &input);
+    readInput(argv[1], &image);
 
     for (int i = 1; i < nProcesses; i++) {
-      sendImage(&input, i);
+      sendImage(&image, i);
     }
 
-    // TODO apply filters
-    output = input;
+    applyFilter(&image, getFilter(argv[3]));
 
-    writeData(argv[2], &output);
+    writeData(argv[2], &image);
   } else {
     image_t *img = recvImage(0);
     char name[20];

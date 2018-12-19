@@ -3,6 +3,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdlib.h>
+#include <mpi.h>
 
 /*
  * Allocate matrix of pixels in image structure.
@@ -115,25 +116,34 @@ void writeData(const char *fileName, image *img) {
 }
 
 int main(int argc, char *argv[]) {
-  // argv[1]  input
-  // argv[2]  output
-  // argv[3]+ filter
-  if (argc < 4) {
-    printf(
-        "Usage: mpirun -np N ./%s image_in.pnm image_out.pnm filter1 filter2 ... filterX\n",
-        argv[0]);
-    exit(-1);
+  int rank;
+  int nProcesses;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &nProcesses);
+
+  if (rank == 0) {
+    // argv[1]  input
+    // argv[2]  output
+    // argv[3]+ filter
+    if (argc < 4) {
+      printf(
+          "Usage: mpirun -np N ./%s image_in.pnm image_out.pnm filter1 filter2 ... filterX\n",
+          argv[0]);
+      exit(-1);
+    }
+
+    image input;
+    image output;
+
+    readInput(argv[1], &input);
+
+    // TODO apply filters
+    output = input;
+
+    writeData(argv[2], &output);
   }
 
-  image input;
-  image output;
-
-  readInput(argv[1], &input);
-
-  // TODO apply filters
-  output = input;
-
-  writeData(argv[2], &output);
-
+  MPI_Finalize();
   return 0;
 }

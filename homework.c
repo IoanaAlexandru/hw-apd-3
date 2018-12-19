@@ -8,7 +8,7 @@
  * Allocate matrix of pixels in image structure.
  * Returns 0 after a successful allocation, -1 otherwise.
  */
-int allocImage(image *img) {
+int allocImage(image_t *img) {
   img->image = (unsigned char **) malloc(
       (size_t) img->height * sizeof(unsigned char **));
   if (img->image == NULL)
@@ -33,7 +33,7 @@ int allocImage(image *img) {
 /*
  * Free matrix of pixels in image structure.
  */
-void freeImage(image *img) {
+void freeImage(image_t *img) {
   for (int i = 0; i < img->height; i++)
     free(img->image[i]);
   free(img->image);
@@ -42,7 +42,7 @@ void freeImage(image *img) {
 /*
  * Read data from file <fileName> and save it in <img>.
  */
-void readInput(const char *fileName, image *img) {
+void readInput(const char *fileName, image_t *img) {
   FILE *in = fopen(fileName, "rb");
   if (in == NULL) {
     fprintf(stderr, "Could not open %s!\n", fileName);
@@ -85,7 +85,7 @@ void readInput(const char *fileName, image *img) {
 /*
  * Write data from <img> to file <fileName> and free <img>.
  */
-void writeData(const char *fileName, image *img) {
+void writeData(const char *fileName, image_t *img) {
   FILE *out = fopen(fileName, "wb");
   if (out == NULL) {
     fprintf(stderr, "Could not open %s!\n", fileName);
@@ -115,7 +115,7 @@ void writeData(const char *fileName, image *img) {
   freeImage(img);
 }
 
-void sendImage(image *img, int receiver) {
+void sendImage(image_t *img, int receiver) {
   MPI_Send(&(img->type), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
   MPI_Send(&(img->width), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
   MPI_Send(&(img->height), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
@@ -137,8 +137,8 @@ void sendImage(image *img, int receiver) {
   }
 }
 
-image *recvImage(int sender) {
-  image *img = (image *) malloc(sizeof(image));
+image_t *recvImage(int sender) {
+  image_t *img = (image_t *) malloc(sizeof(image_t));
 
   MPI_Recv(&(img->type),
            1,
@@ -198,13 +198,13 @@ int main(int argc, char *argv[]) {
     // argv[3]+ filter
     if (argc < 4) {
       printf(
-          "Usage: mpirun -np N ./%s image_in.pnm image_out.pnm filter1 filter2 ... filterX\n",
+          "Usage: mpirun -np N ./%s Image_in.pnm Image_out.pnm filter1 filter2 ... filterX\n",
           argv[0]);
       exit(-1);
     }
 
-    image input;
-    image output;
+    image_t input;
+    image_t output;
 
     readInput(argv[1], &input);
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
 
     writeData(argv[2], &output);
   } else {
-    image *img = recvImage(0);
+    image_t *img = recvImage(0);
     char name[20];
     sprintf(name, "%s%d.pgm", argv[2], rank);
     writeData(name, img);

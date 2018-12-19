@@ -23,6 +23,7 @@ int allocImage(image *img) {
     if (img->image[i] == NULL) {
       for (int j = 0; j < i; j++)
         free(img->image[j]);
+      free(img->image);
       return -1;
     }
   }

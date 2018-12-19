@@ -1,7 +1,6 @@
 #include "homework.h"
 #include <stdio.h>
 #include <malloc.h>
-#include <string.h>
 #include <stdlib.h>
 #include <mpi.h>
 

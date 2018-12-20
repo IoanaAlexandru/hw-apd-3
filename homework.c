@@ -29,14 +29,16 @@ int main(int argc, char *argv[]) {
       sendImage(&image, i);
     }
 
-    applyFilter(&image, getFilter(argv[3]));
+    for (int i = 3; i < argc; i++) {
+      applyFilter(&image, getFilter(argv[i]));
+    }
 
     writeData(argv[2], &image);
   } else {
-//    image_t *img = recvImage(0);
-//    char name[20];
-//    sprintf(name, "%s%d.pgm", argv[2], rank);
-//    writeData(name, img);
+    image_t *img = recvImage(0);
+    char name[50];
+    sprintf(name, "%s%d.pgm", argv[2], rank);
+    writeData(name, img);
   }
 
   MPI_Finalize();

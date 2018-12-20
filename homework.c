@@ -1,4 +1,4 @@
-#include "homework.h"
+#include "functions.c"
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
@@ -33,10 +33,10 @@ int main(int argc, char *argv[]) {
 
     writeData(argv[2], &image);
   } else {
-    image_t *img = recvImage(0);
-    char name[20];
-    sprintf(name, "%s%d.pgm", argv[2], rank);
-    writeData(name, img);
+//    image_t *img = recvImage(0);
+//    char name[20];
+//    sprintf(name, "%s%d.pgm", argv[2], rank);
+//    writeData(name, img);
   }
 
   MPI_Finalize();

@@ -58,17 +58,17 @@ int main() {
              "../test/ref/lenna_bw_mean.pgm",
              "mean");
 
-//  printf("Testing bw sharpen...\n");
-//  testFilter("../test/in/lenna_bw.pgm",
-//             "../test/out/lenna_bw_sharpen.pgm",
-//             "../test/ref/lenna_bw_sharpen.pgm",
-//             "sharpen");
+  printf("Testing bw sharpen...\n");
+  testFilter("../test/in/lenna_bw.pgm",
+             "../test/out/lenna_bw_sharpen.pgm",
+             "../test/ref/lenna_bw_sharpen.pgm",
+             "sharpen");
 
-//  printf("Testing bw smooth...\n");
-//  testFilter("../test/in/lenna_bw.pgm",
-//             "../test/out/lenna_bw_smooth.pgm",
-//             "../test/ref/lenna_bw_smooth.pgm",
-//             "smooth");
+  printf("Testing bw smooth...\n");
+  testFilter("../test/in/lenna_bw.pgm",
+             "../test/out/lenna_bw_smooth.pgm",
+             "../test/ref/lenna_bw_smooth.pgm",
+             "smooth");
 
   printf("Testing color blur...\n");
   testFilter("../test/in/lenna_color.pnm",
@@ -88,15 +88,15 @@ int main() {
              "../test/ref/lenna_color_mean.pnm",
              "mean");
 
-//  printf("Testing color sharpen...\n");
-//  testFilter("../test/in/lenna_color.pnm",
-//             "../test/out/lenna_color_sharpen.pnm",
-//             "../test/ref/lenna_color_sharpen.pnm",
-//             "sharpen");
+  printf("Testing color sharpen...\n");
+  testFilter("../test/in/lenna_color.pnm",
+             "../test/out/lenna_color_sharpen.pnm",
+             "../test/ref/lenna_color_sharpen.pnm",
+             "sharpen");
 
-//  printf("Testing color smooth...\n");
-//  testFilter("../test/in/lenna_color.pnm",
-//             "../test/out/lenna_color_smooth.pnm",
-//             "../test/ref/lenna_color_smooth.pnm",
-//             "smooth");
+  printf("Testing color smooth...\n");
+  testFilter("../test/in/lenna_color.pnm",
+             "../test/out/lenna_color_smooth.pnm",
+             "../test/ref/lenna_color_smooth.pnm",
+             "smooth");
 }

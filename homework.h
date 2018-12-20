@@ -17,24 +17,32 @@ typedef struct {
 } image_t;
 
 typedef struct {
-  const int kernel[3][3];
-  const int weight;
+  const float kernel[3][3];
+  const float weight;
   const char *name;
 } filter_t;
 
 const filter_t IDENTITY_FILTER = {.kernel = {{0, 0, 0}, {0, 1, 0}, {0, 0, 0}},
     .weight = 1,
     .name = "identity"};
-const filter_t SMOOTH_FILTER = {.kernel = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}},
-    .weight = 9,
+const filter_t
+    SMOOTH_FILTER = {.kernel = {{1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f},
+                                {1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f},
+                                {1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f}},
+    .weight = 1,
     .name = "smooth"};
 const filter_t BLUR_FILTER = {.kernel = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}},
     .weight = 16,
     .name = "blur"};
-const filter_t SHARPEN_FILTER = {.kernel = {{0, -2, 0}, {-2, 11, -2}, {0, -2, 0}},
-    .weight = 3,
-    .name = "sharpen"};
-const filter_t MEAN_FILTER = {.kernel = {{-1, -1, -1}, {-1, 9, -1}, {-1, -1, -1}},
+const filter_t
+    SHARPEN_FILTER =
+    {.kernel = {{0, -2.0f / 3.0f, 0},
+                {-2.0f / 3.0f, 11.0f / 3.0f, -2.0f / 3.0f},
+                {0, -2.0f / 3.0f, 0}},
+        .weight = 1,
+        .name = "sharpen"};
+const filter_t
+    MEAN_FILTER = {.kernel = {{-1, -1, -1}, {-1, 9, -1}, {-1, -1, -1}},
     .weight = 1,
     .name = "mean"};
 const filter_t EMBOSS_FILTER = {.kernel = {{0, 1, 0}, {0, 0, 0}, {0, -1, 0}},

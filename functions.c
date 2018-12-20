@@ -184,8 +184,8 @@ image_t *recvImage(int sender) {
   return img;
 }
 
-int multiplyMatrices(const int m1[3][3], unsigned char m2[3][3]) {
-  int result = 0;
+float multiplyMatrices(const float m1[3][3], unsigned char m2[3][3]) {
+  float result = 0;
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       result += m1[i][j] * m2[i][j];

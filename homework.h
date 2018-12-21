@@ -69,10 +69,10 @@ void readInput(const char *fileName, image_t *img);
 
 void writeData(const char *fileName, image_t *img);
 
-void sendImage(image_t *img, int receiver);
+void sendImage(image_t *img, int receiver, int start_line, int end_line);
 
 image_t *recvImage(int sender);
 
-void applyFilter(image_t *img, filter_t filter);
+void applyFilter(image_t *img, filter_t filter, int start_line, int end_line);
 
 #endif /* HOMEWORK_H */

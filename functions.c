@@ -114,10 +114,11 @@ void writeData(const char *fileName, image_t *img) {
   freeImage(img);
 }
 
-void sendImage(image_t *img, int receiver) {
+void sendImage(image_t *img, int receiver, int start_line, int end_line) {
   MPI_Send(&(img->type), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
   MPI_Send(&(img->width), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
-  MPI_Send(&(img->height), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
+  int new_height = end_line - start_line;
+  MPI_Send(&new_height, 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
   MPI_Send(&(img->maxval),
            1,
            MPI_UNSIGNED_CHAR,
@@ -126,7 +127,7 @@ void sendImage(image_t *img, int receiver) {
            MPI_COMM_WORLD);
 
   int real_width = img->type == 5 ? img->width : img->width * 3;
-  for (int i = 0; i < img->height; i++) {
+  for (int i = start_line; i < end_line; i++) {
     MPI_Send(img->image[i],
              real_width,
              MPI_UNSIGNED_CHAR,
@@ -192,14 +193,14 @@ float multiplyMatrices(const float m1[3][3], unsigned char m2[3][3]) {
   return result;
 }
 
-void applyFilter(image_t *img, filter_t filter) {
+void applyFilter(image_t *img, filter_t filter, int start_line, int end_line) {
   image_t result = *img;
   allocImage(&result);
 
   int step = img->type == 5 ? 1 : 3;
   int real_width = img->width * step;
 
-  for (int i = 0; i < img->height; i++) {
+  for (int i = start_line; i < end_line; i++) {
     for (int j = 0; j < real_width - step; j++) {
       if (i == 0 || j < step || i == img->height - 1
           || j > real_width - 2 * (step - 1)) {

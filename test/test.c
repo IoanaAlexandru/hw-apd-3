@@ -34,7 +34,7 @@ void testFilter(const char *in,
   readInput(in, &image);
   filter_t my_filter = getFilter(filter_string);
   assert(strcmp(my_filter.name, "identity") != 0);
-  applyFilter(&image, my_filter);
+  applyFilter(&image, my_filter, 0, image.height);
   writeData(out, &image);
   compareImages(out, ref);
 }

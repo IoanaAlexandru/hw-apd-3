@@ -1,0 +1,55 @@
+                 _____                      _____ 
+                │_   _│__ _ __ ___   __ _  │___ / 
+                  │ │/ _ \ '_ ` _ \ / _` │   │_ \ 
+                  │ │  __/ │ │ │ │ │ (_│ │  ___) │
+                  │_│\___│_│ │_│ │_│\__,_│ │____/ 
+                                                   
+
+************************* Structuri folosite *************************
+
+Am folosit aceeași structură pentru imagine ca la tema 1 (și implicit
+și aceleași funcții de scriere/citire în/din fișier). Am adăugat și
+o structură filter_t, care ține detaliile unui filtru (kernel, nume
+și valoarea cu care trebuie împărțit fiecare element din kernel).
+
+**************************** Paralelizare ****************************
+
+Procesul cu rank = 0 are rol de "administrator". Acesta citește datele
+din imagine și le trimite mai departe la celelalte procese, ulterior
+reconstruind imaginea și creând fișierul de output.
+
+Fiecare proces (inclusiv cel cu rank = 0) are atribuită o secțiune din
+imagine. Imaginea este împărțită pe înălțime, egal între toate proce-
+sele, și fiecare proces aplică fiecare filtru pe partea sa de imagine.
+Doar procesul─administrator are acces la întreaga imagine, celelalte
+procese lucrează cu imagini mai mici ce reprezintă un crop al imagi-
+nii inițiale ce constă din partea care trebuie calculată de acel pro-
+ces și încă un rând sau două (sus și jos, unde este cazul) de pixeli
+pentru margine.
+
+După aplicarea fiecărui filtru, fiecare proces trebuie să comunice cu
+procesele vecine ca să își updateze marginile și să le folosească în
+calculul filtrelor ulterioare. Această comunicare se face în cascadă,
+de la procesul cu rank-ul cel mai mic până la cel cu rank-ul cel mai
+mare. În cazul rulării cu 4 procese, această comunicare se face ast-
+fel:
+┌────────────────┬────────────────┬────────────────┬────────────────┐
+│       R0       │       R1       │       R2       │       R3       │
+├────────────────┼────────────────┼────────────────┼────────────────┤
+│ send(1, n - 1) │ recv(0, 0)     │                │                │
+│ recv(1, n)     │ send(0, 1)     │                │                │
+│                │ send(2, n - 1) │ recv(1, 0)     │                │
+│                │ recv(2, n)     │ send(1, 1)     │                │
+│                │                │ send(3, n - 1) │ recv(2, 0)     │
+│                │                │ recv(3, n)     │ send(2, 1)     │
+└────────────────┴────────────────┴────────────────┴────────────────┘
+
+Unde am notat:
+- Rx: procesul cu rank = x
+- send(process, line): trimiterea liniei 'line' a imaginii procesului
+                       curent către procesul cu rank 'process'
+- recv(process, line): primirea liniei 'line' a imaginii procesului
+                       curent de la procesul cu rank 'process'
+- n: indicele ultimei linii din imaginea procesului curent
+
+░░░░░░░░░░░░░░░░░░░░░░ Ioana Alexandru ╽╿ 334CB ░░░░░░░░░░░░░░░░░░░░░░

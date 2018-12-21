@@ -114,6 +114,7 @@ void writeData(const char *fileName, image_t *img) {
   freeImage(img);
 }
 
+// Send section of <img> (from <start_line> to <end_line> to process <receiver>
 void sendImage(image_t *img, int receiver, int start_line, int end_line) {
   MPI_Send(&(img->type), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
   MPI_Send(&(img->width), 1, MPI_INT, receiver, DEFAULT_TAG, MPI_COMM_WORLD);
@@ -137,6 +138,7 @@ void sendImage(image_t *img, int receiver, int start_line, int end_line) {
   }
 }
 
+// Receive image from process <sender> and return it.
 image_t *recvImage(int sender) {
   image_t *img = (image_t *) malloc(sizeof(image_t));
 
@@ -185,6 +187,7 @@ image_t *recvImage(int sender) {
   return img;
 }
 
+// Multiply 3x3 matrices element by element
 float multiplyMatrices(const float m1[3][3], unsigned char m2[3][3]) {
   float result = 0;
   for (int i = 0; i < 3; i++)
@@ -193,6 +196,7 @@ float multiplyMatrices(const float m1[3][3], unsigned char m2[3][3]) {
   return result;
 }
 
+// Apply <filter> to <img> from <start_line> to <end_line>.
 void applyFilter(image_t *img, filter_t filter, int start_line, int end_line) {
   image_t result = *img;
   allocImage(&result);

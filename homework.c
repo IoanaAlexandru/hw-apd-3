@@ -27,15 +27,20 @@ int main(int argc, char *argv[]) {
 
     int start_line, end_line;
 
+    // Send parts of the image to each of the other processes
     for (int i = 1; i < nProcesses; i++) {
       start_line = (i * image.height) / nProcesses;
       end_line = ((i + 1) * image.height) / nProcesses;
+
+      // Add extra edge lines if they exist
       start_line -= 1;
       if (i != nProcesses - 1)
         end_line++;
+
       sendImage(&image, i, start_line, end_line);
     }
 
+    // Apply filters on the first part of the image
     start_line = 0;
     end_line = image.height / nProcesses;
     if (end_line != image.height)
@@ -46,6 +51,7 @@ int main(int argc, char *argv[]) {
       if (nProcesses > 1) {
         int real_width = image.type == 5 ? image.width : image.width * 3;
 
+        // Send computed edge line to next process
         MPI_Send(image.image[end_line - 2],
                  real_width,
                  MPI_UNSIGNED_CHAR,
@@ -53,6 +59,7 @@ int main(int argc, char *argv[]) {
                  DEFAULT_TAG,
                  MPI_COMM_WORLD);
 
+        // Receive computed edge line from next process
         MPI_Recv(image.image[end_line - 1],
                  real_width,
                  MPI_UNSIGNED_CHAR,
@@ -63,21 +70,31 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    // Receive data from all processes and reconstruct image
     for (int i = 1; i < nProcesses; i++) {
       start_line = (i * image.height) / nProcesses;
       end_line = ((i + 1) * image.height) / nProcesses;
 
       image_t *img = recvImage(i);
+      free(img->image[0]);
       for (int j = start_line; j < end_line; j++) {
+        free(image.image[j]);
         image.image[j] = img->image[j - start_line + 1];
       }
+      for (int j = end_line - start_line + 2; j < img->height; j++)
+        free(img->image[j]);
+
+      free(img->image);
+      free(img);
     }
 
     writeData(argv[2], &image);
   } else {
+    // Receive image part from root process
     image_t *img = recvImage(0);
 
 
+    // Apply filters, updating the upper and lower edges each time if they exist
     for (int i = 3; i < argc; i++) {
       applyFilter(img, getFilter(argv[i]), 0, img->height);
 
@@ -117,7 +134,10 @@ int main(int argc, char *argv[]) {
 
     }
 
+    // Send computed image part to root process
     sendImage(img, 0, 0, img->height);
+    freeImage(img);
+    free(img);
   }
 
   MPI_Finalize();
